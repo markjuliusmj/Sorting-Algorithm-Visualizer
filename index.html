@@ -9,12 +9,26 @@
 <body>
     <div class="game-container">
         <h1>Rock, Paper, Scissors Game</h1>
-        <div class="button-container">
-            <button class="game-button" onclick="playGame('rock')">Rock</button>
-            <button class="game-button" onclick="playGame('paper')">Paper</button>
-            <button class="game-button" onclick="playGame('scissors')">Scissors</button>
+        <div id="start-screen">
+            <h2>Choose Rounds:</h2>
+            <button class="round-button" onclick="startGame(1)">Best of 1</button>
+            <button class="round-button" onclick="startGame(3)">Best of 3</button>
+            <button class="round-button" onclick="startGame(5)">Best of 5</button>
         </div>
-        <div id="result"></div>
+        <div id="game-screen" style="display: none;">
+            <div class="button-container">
+                <button class="game-button" onclick="playGame('rock')">Rock</button>
+                <button class="game-button" onclick="playGame('paper')">Paper</button>
+                <button class="game-button" onclick="playGame('scissors')">Scissors</button>
+            </div>
+            <div id="result"></div>
+            <button id="next-button" onclick="nextScreen()" style="display: none;">Next</button>
+        </div>
+        <div id="game-over-screen" style="display: none;">
+            <h2>Game Over</h2>
+            <div id="final-result"></div>
+            <button onclick="resetGame()">Play Again</button>
+        </div>
     </div>
     <script src="scripts.js"></script>
 </body>
