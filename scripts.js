@@ -84,9 +84,9 @@ function endGame() {
     document.getElementById("game-over-screen").style.display = "block";
     let finalResult = "";
     if (userScore > computerScore) {
-        finalResult = "Congratulations, you won the game!";
+        finalResult = "Congratulations, You won the game!";
     } else if (userScore < computerScore) {
-        finalResult = "Sorry, the computer won the game.";
+        finalResult = "Sorry, the Computer won the game.";
     } else {
         finalResult = "It's a tie!";
     }
