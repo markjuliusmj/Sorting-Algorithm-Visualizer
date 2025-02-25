@@ -8,60 +8,71 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background: linear-gradient(0.25turn, #3f87a6, #ebf8e1, #f69d3c);
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
             margin: 0;
-            color: #333;
+            color: white;
         }
-        .sort-buttons {
-            margin-top: 20px;
-        }
-        button {
+        .sort-buttons button, .input-section button {
             margin: 5px;
-            padding: 8px 12px;
-            font-size: 14px;
+            padding: 10px 15px;
+            font-size: 16px;
             cursor: pointer;
             border: none;
-            background-color: #007bff;
-            color: white;
-            border-radius: 5px;
+            background-color: #ffcc00;
+            color: #333;
+            border-radius: 8px;
+            transition: 0.3s;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #ffdb4d;
         }
         .input-section {
             margin-top: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            display: inline-block;
         }
         .steps-container {
             margin-top: 20px;
-            text-align: left;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            text-align: center;
+            max-width: 80%;
+            margin: auto;
         }
         .step {
             font-family: monospace;
             font-size: 18px;
-            background: rgba(255, 255, 255, 0.7);
-            padding: 5px;
-            margin: 2px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            margin: 5px 0;
             border-radius: 5px;
-            width: fit-content;
+            color: #fff;
         }
         #bar-container {
             display: flex;
             align-items: flex-end;
             justify-content: center;
-            gap: 2px;
-            height: 300px;
+            gap: 5px;
+            height: 350px;
             margin-top: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
         }
         .bar {
-            width: 10px;
-            background-color: #007bff;
+            width: 15px;
+            background-color: #ff5733;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
         }
         #info {
             margin-top: 20px;
-            font-size: 16px;
+            font-size: 18px;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -131,20 +142,32 @@
         }
 
         async function bubbleSort() {
-            updateInfo("Bubble Sort: O(n²) - Used in simple applications, inefficient for large datasets.");
-            let arr = [...array];
-            for (let i = 0; i < arr.length; i++) {
-                for (let j = 0; j < arr.length - i - 1; j++) {
-                    if (arr[j] > arr[j + 1]) {
-                        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
-                        array = [...arr];
-                        addStep(`Step ${i + 1}: ${arr.join(", ")}`);
-                        drawBars();
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                    }
+        updateInfo("Bubble Sort: O(n²) - Used in simple applications, inefficient for large datasets.");
+        let arr = [...array];
+        let stepCounter = 1; // Properly track sorting steps
+        let swapped;
+
+        for (let i = 0; i < arr.length; i++) {
+            swapped = false; // Reset swap flag
+
+            for (let j = 0; j < arr.length - i - 1; j++) {
+                if (arr[j] > arr[j + 1]) {
+                    [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+                    swapped = true;
+                    
+                    // Update array and visual
+                    array = [...arr];
+                    addStep(`Step ${stepCounter}: ${arr.join(", ")}`);
+                    stepCounter++; // Increase step count properly
+                    drawBars();
+                    await new Promise(resolve => setTimeout(resolve, 100));
                 }
             }
+
+            // If no swaps happened, array is sorted; break early
+            if (!swapped) break;
         }
+    }
 
         async function quickSort(left, right) {
             updateInfo("Quick Sort: O(n log n) - Used in database indexing and search algorithms.");
@@ -222,6 +245,20 @@
             updateInfo("Binary Search: O(log n) - Used in search engines, dictionaries, and databases.");
             array.sort((a, b) => a - b);
             drawBars();
+        }
+
+        function drawBars() {
+            const container = document.getElementById("bar-container");
+            container.innerHTML = "";
+            array.forEach(value => {
+                const bar = document.createElement("div");
+                bar.classList.add("bar");
+                bar.style.height = `${value * 3}px`;
+                const number = document.createElement("span");
+                number.innerText = value;
+                bar.appendChild(number);
+                container.appendChild(bar);
+            });
         }
     </script>
 </body>
