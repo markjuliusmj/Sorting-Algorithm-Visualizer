@@ -12,51 +12,99 @@
             margin: 0;
             color: #333;
         }
-        .bar-container {
+        .sort-buttons {
+            margin-top: 20px;
+        }
+        button {
+            margin: 5px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .input-section {
+            margin-top: 30px;
+        }
+        .steps-container {
+            margin-top: 20px;
+            text-align: left;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+        .step {
+            font-family: monospace;
+            font-size: 18px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 5px;
+            margin: 2px;
+            border-radius: 5px;
+            width: fit-content;
+        }
+        #bar-container {
+            display: flex;
             align-items: flex-end;
+            justify-content: center;
+            gap: 2px;
             height: 300px;
             margin-top: 20px;
         }
         .bar {
-            width: 20px;
-            margin: 2px;
-            background-color: blue;
+            width: 10px;
+            background-color: #007bff;
         }
-        .info {
+        #info {
             margin-top: 20px;
             font-size: 16px;
-        }
-        .input-section {
-            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <h1>Sorting Algorithm Visualizer</h1>
-    <button onclick="generateArray()">Generate New Array</button>
-    <button onclick="bubbleSort()">Bubble Sort</button>
-    <button onclick="quickSort(0, array.length - 1)">Quick Sort</button>
-    <button onclick="insertionSort()">Insertion Sort</button>
-    <button onclick="selectionSort()">Selection Sort</button>
-    <button onclick="binarySearch()">Binary Search</button>
-    <div class="bar-container" id="bar-container"></div>
-    <div class="info" id="info"></div>
     
+    <div id="bar-container"></div>
+    
+    <div id="info">Quick Sort: O(n log n) - Used in database indexing and search algorithms.</div>
+
     <div class="input-section">
-        <h3>Problem-Solving Feature</h3>
-        <label>Enter dataset (comma-separated):</label>
+        <h3>Enter Dataset</h3>
+        <label>Enter numbers (comma-separated):</label>
         <input type="text" id="userInput" placeholder="10, 25, 3, 42, 17">
-        <button onclick="analyzeAndSort()">Analyze & Sort</button>
-        <div id="analysis"></div>
+        <button onclick="setUserArray()">Submit</button>
+        <button onclick="generateArray()">Generate Random Array</button>
     </div>
-    
+
+    <div class="sort-buttons">
+        <button onclick="bubbleSort()">Bubble Sort</button>
+        <button onclick="quickSort(0, array.length - 1)">Quick Sort</button>
+        <button onclick="insertionSort()">Insertion Sort</button>
+        <button onclick="selectionSort()">Selection Sort</button>
+    </div>
+
+    <div class="steps-container" id="steps-container"></div>
+
     <script>
+        let userArray = [];
         let array = [];
+
+        function setUserArray() {
+            let input = document.getElementById("userInput").value;
+            userArray = input.split(",").map(num => parseInt(num.trim())).filter(num => !isNaN(num));
+            array = [...userArray];
+            document.getElementById("steps-container").innerHTML = `<div class="step">Initial: ${userArray.join(", ")}</div>`;
+            drawBars();
+        }
 
         function generateArray() {
             array = Array.from({ length: 20 }, () => Math.floor(Math.random() * 100) + 10);
+            userArray = [...array];
+            document.getElementById("steps-container").innerHTML = `<div class="step">Generated: ${userArray.join(", ")}</div>`;
             drawBars();
         }
 
@@ -75,12 +123,22 @@
             document.getElementById("info").innerText = text;
         }
 
+        function addStep(stepText) {
+            let stepDiv = document.createElement("div");
+            stepDiv.classList.add("step");
+            stepDiv.innerText = stepText;
+            document.getElementById("steps-container").appendChild(stepDiv);
+        }
+
         async function bubbleSort() {
             updateInfo("Bubble Sort: O(n²) - Used in simple applications, inefficient for large datasets.");
-            for (let i = 0; i < array.length; i++) {
-                for (let j = 0; j < array.length - i - 1; j++) {
-                    if (array[j] > array[j + 1]) {
-                        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+            let arr = [...array];
+            for (let i = 0; i < arr.length; i++) {
+                for (let j = 0; j < arr.length - i - 1; j++) {
+                    if (arr[j] > arr[j + 1]) {
+                        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+                        array = [...arr];
+                        addStep(`Step ${i + 1}: ${arr.join(", ")}`);
                         drawBars();
                         await new Promise(resolve => setTimeout(resolve, 100));
                     }
@@ -90,49 +148,70 @@
 
         async function quickSort(left, right) {
             updateInfo("Quick Sort: O(n log n) - Used in database indexing and search algorithms.");
-            if (left >= right) return;
-            let pivot = array[right];
-            let partitionIndex = left;
-            for (let i = left; i < right; i++) {
-                if (array[i] < pivot) {
-                    [array[i], array[partitionIndex]] = [array[partitionIndex], array[i]];
-                    partitionIndex++;
+            let arr = [...array];
+
+            async function partition(left, right) {
+                let pivot = arr[right];
+                let partitionIndex = left;
+                for (let i = left; i < right; i++) {
+                    if (arr[i] < pivot) {
+                        [arr[i], arr[partitionIndex]] = [arr[partitionIndex], arr[i]];
+                        partitionIndex++;
+                    }
+                }
+                [arr[partitionIndex], arr[right]] = [arr[right], arr[partitionIndex]];
+                array = [...arr];
+                addStep(`Partition: ${arr.join(", ")}`);
+                drawBars();
+                await new Promise(resolve => setTimeout(resolve, 200));
+                return partitionIndex;
+            }
+
+            async function quickSortRecursive(left, right) {
+                if (left < right) {
+                    let partitionIndex = await partition(left, right);
+                    await quickSortRecursive(left, partitionIndex - 1);
+                    await quickSortRecursive(partitionIndex + 1, right);
                 }
             }
-            [array[partitionIndex], array[right]] = [array[right], array[partitionIndex]];
-            drawBars();
-            await new Promise(resolve => setTimeout(resolve, 200));
-            await quickSort(left, partitionIndex - 1);
-            await quickSort(partitionIndex + 1, right);
+
+            await quickSortRecursive(left, right);
         }
 
         async function insertionSort() {
             updateInfo("Insertion Sort: O(n²) - Used in smaller datasets, often in hybrid sorting techniques like Timsort.");
-            for (let i = 1; i < array.length; i++) {
-                let key = array[i];
+            let arr = [...array];
+            for (let i = 1; i < arr.length; i++) {
+                let key = arr[i];
                 let j = i - 1;
-                while (j >= 0 && array[j] > key) {
-                    array[j + 1] = array[j];
+                while (j >= 0 && arr[j] > key) {
+                    arr[j + 1] = arr[j];
                     j--;
+                    array = [...arr];
                     drawBars();
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
-                array[j + 1] = key;
+                arr[j + 1] = key;
+                array = [...arr];
+                addStep(`Step ${i}: ${arr.join(", ")}`);
                 drawBars();
             }
         }
 
         async function selectionSort() {
             updateInfo("Selection Sort: O(n²) - Used in embedded systems where memory writes are costly.");
-            for (let i = 0; i < array.length; i++) {
+            let arr = [...array];
+            for (let i = 0; i < arr.length; i++) {
                 let minIndex = i;
-                for (let j = i + 1; j < array.length; j++) {
-                    if (array[j] < array[minIndex]) {
+                for (let j = i + 1; j < arr.length; j++) {
+                    if (arr[j] < arr[minIndex]) {
                         minIndex = j;
                     }
                 }
                 if (minIndex !== i) {
-                    [array[i], array[minIndex]] = [array[minIndex], array[i]];
+                    [arr[i], arr[minIndex]] = [arr[minIndex], arr[i]];
+                    array = [...arr];
+                    addStep(`Step ${i + 1}: ${arr.join(", ")}`);
                     drawBars();
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
@@ -144,25 +223,6 @@
             array.sort((a, b) => a - b);
             drawBars();
         }
-
-        function analyzeAndSort() {
-            let input = document.getElementById("userInput").value;
-            let userArray = input.split(",").map(num => parseInt(num.trim()));
-            let sortedArray;
-            let method;
-            
-            if (userArray.length <= 10) {
-                method = "Insertion Sort (best for small datasets)";
-                sortedArray = userArray.sort((a, b) => a - b);
-            } else {
-                method = "Quick Sort (best for larger datasets)";
-                sortedArray = userArray.sort((a, b) => a - b);
-            }
-            
-            document.getElementById("analysis").innerHTML = `Best method: ${method} <br> Sorted Output: ${sortedArray.join(", ")}`;
-        }
-        
-        generateArray();
     </script>
 </body>
 </html>
